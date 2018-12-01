@@ -20,3 +20,4 @@ Restaurant
 Agriculture
 ERPNext Integrations
 Non Profit
+Billing

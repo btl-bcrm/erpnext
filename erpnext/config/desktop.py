@@ -485,5 +485,13 @@ def get_data():
 			"type": "module",
 			"label": _("Non Profit"),
 			"hidden": 1
+		},
+                {
+			"module_name": "Billing",
+			"color": "#DE2B37",
+			"icon": "octicon octicon-heart",
+			"type": "module",
+			"label": _("Billing"),
+			"hidden": 1
 		}
 	]
