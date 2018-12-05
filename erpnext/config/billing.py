@@ -18,4 +18,31 @@ def get_data():
 				},
 			]
 		},
+                {
+			"label": _("SIM Management"),
+			"items": [
+                                {
+					"type": "doctype",
+					"name": "SIM Vendor",
+					"description": _("SIM Vendor.")
+				},
+				{
+					"type": "doctype",
+					"name": "SIM Upload",
+					"description": _("SIM Upload.")
+				},
+				{
+					"type": "doctype",
+					"name": "SIM Entry",
+					"description": _("SIM Entry.")
+				},
+                                {
+					"type": "report",
+					"name": "SIM Report",
+					"doctype": "SIM Entry",
+					"is_query_report": True,
+                                        "style": {"color":"red"}
+				},
+			]
+		},
 	]

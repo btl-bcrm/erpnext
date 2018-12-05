@@ -1,0 +1,32 @@
+{
+ "add_total_row": 0, 
+ "creation": "2018-12-05 10:07:56.288254", 
+ "disabled": 0, 
+ "docstatus": 0, 
+ "doctype": "Report", 
+ "idx": 0, 
+ "is_standard": "Yes", 
+ "modified": "2018-12-05 10:07:56.288254", 
+ "modified_by": "Administrator", 
+ "module": "Billing", 
+ "name": "SIM Report", 
+ "owner": "Administrator", 
+ "prepared_report": 0, 
+ "ref_doctype": "SIM Entry", 
+ "report_name": "SIM Report", 
+ "report_type": "Script Report", 
+ "roles": [
+  {
+   "role": "System Manager"
+  }, 
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "SIM User"
+  }, 
+  {
+   "role": "SIM Manager"
+  }
+ ]
+}
