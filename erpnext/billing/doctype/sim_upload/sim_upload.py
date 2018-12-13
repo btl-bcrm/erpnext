@@ -51,7 +51,7 @@ class SIMUpload(Document):
 		    line_count += 1
 		    data = line.split(" ")
 		    counter += 1
-		    if counter <= 700:
+		    if counter <= 1000:
 			flag = 0
 		    else:
 			try: 
