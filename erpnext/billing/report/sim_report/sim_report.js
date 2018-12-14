@@ -5,14 +5,26 @@
 frappe.query_reports["SIM Report"] = {
 	"filters": [
 		{		
-			"fieldname":"iccid",
-			"label": ("SIM ID"),
+			"fieldname":"from_iccid",
+			"label": ("FROM SIM ID"),
 			"fieldtype": "Data",
 			"width": "100"
 		},
 		{		
-			"fieldname":"imsi",
-			"label": ("IMSI"),
+			"fieldname":"to_iccid",
+			"label": ("TO SIM ID"),
+			"fieldtype": "Data",
+			"width": "100"
+		},
+		{		
+			"fieldname":"from_imsi",
+			"label": ("FROM IMSI"),
+			"fieldtype": "Data",
+			"width": "100"
+		},
+		{		
+			"fieldname":"to_imsi",
+			"label": ("TO IMSI"),
 			"fieldtype": "Data",
 			"width": "100"
 		},

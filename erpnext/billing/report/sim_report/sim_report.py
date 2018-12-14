@@ -34,7 +34,6 @@ def get_data(filters):
                 sim_upload, sim_vendor
         from `tabSIM Entry`
         {0}
-        limit 100
     """.format(cond)
     result = frappe.db.sql(query)
     data.extend(result)
@@ -45,11 +44,27 @@ def get_data(filters):
 def get_conditions(filters):
     cond = []
 
-    if filters.get("iccid"):
-        cond.append("name = '{0}'".format(filters.get("iccid")))
+    if filters.get("from_iccid") and filters.get("to_iccid"):
+        cond.append("name between '{0}' and '{1}'".format(filters.get("from_iccid"), filters.get("to_iccid")))
+    elif filters.get("from_iccid"):
+        cond.append("name = '{0}'".format(filters.get("from_iccid")))
+    elif filters.get("to_iccid"):
+        cond.append("name = '{0}'".format(filters.get("to_iccid")))
+    else:
+        pass
 
-    if filters.get("imsi"):
-        cond.append("imsi = '{0}'".format(filters.get("imsi")))
+
+    if filters.get("from_imsi") and filters.get("to_imsi"):
+        cond.append("imsi between '{0}' and '{1}'".format(filters.get("from_imsi"), filters.get("to_imsi")))
+    elif filters.get("from_imsi"):
+        cond.append("imsi = '{0}'".format(filters.get("from_imsi")))
+    elif filters.get("to_imsi"):
+        cond.append("imsi = '{0}'".format(filters.get("to_imsi")))
+    else:
+        pass
+
 
     if len(cond):
         return "where "+" and ".join(cond)
+    else:
+        return "limit 100"
