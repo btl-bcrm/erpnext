@@ -6,6 +6,11 @@ def get_data():
 		{
 			"label": _("Masters"),
 			"items": [
+                                {
+					"type": "doctype",
+					"name": "Service",
+					"description": _("Service master.")
+				},
 				{
 					"type": "doctype",
 					"name": "Customers",
@@ -13,8 +18,13 @@ def get_data():
 				},
 				{
 					"type": "doctype",
-					"name": "Service",
-					"description": _("Service master.")
+					"name": "Contract",
+					"description": _("Customer contract master.")
+				},
+                                {
+					"type": "doctype",
+					"name": "Contract Service",
+					"description": _("Contract service master.")
 				},
 			]
 		},
