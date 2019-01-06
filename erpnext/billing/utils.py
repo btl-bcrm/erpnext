@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 # License: GNU General Public License v3. See license.txt
 # Module: billing
@@ -5,11 +6,132 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import _
-from frappe.utils import flt, getdate, get_datetime, get_url, nowdate, now_datetime, money_in_words
+from frappe.utils import flt, getdate, get_datetime, get_url, nowdate, now_datetime, \
+     money_in_words, add_days, add_months, add_years
 import bscs_utils
 from frappe.desk.tags import DocTags
 import time
 import logging
+from frappe.core.doctype.communication import email
+from datetime import timedelta
+
+def create_tickets():
+    result  = get_tickets(nowdate())
+    counter = 0
+    for cust,data in result.iteritems():
+        current_balance = flt(data['cscurbalance'])
+        root_balance    = 0
+        if not flt(current_balance) and data['customer_id_high']:
+            root_balance = frappe.db.sql("select cscurbalance from `tabCustomers` where name='{0}'".format(data['customer_id_high']))
+            root_balance = root_balance[0][0] if root_balance else 0
+            
+        if (flt(current_balance)+flt(root_balance)+flt(data['due_amount'])) > 0:
+            counter += 1
+            print counter, cust, flt(data['cscurbalance']), flt(data['due_amount'])
+            for row in data.get('alerts'):
+                doc = frappe.new_doc('Work Order')
+                doc.customers = data['customer_id']
+                doc.customer_code = data['customer_code']
+                doc.company_name = data['company_name']
+                doc.first_name = data['first_name']
+                doc.last_name = data['last_name']
+                doc.email_id = data['email_id']
+                doc.contact1 = data['contact1']
+                doc.service = row['sncode']
+                doc.des = row['des']
+                doc.currency = row['currency']
+                doc.price = row['price']
+                doc.order_type = row['action_type']
+                doc.action_method = row['action_method']
+                doc.action_days = row['action_days']
+                doc.notify_customer = row['notify_customer']
+                doc.notify_internal = row['notify_internal']
+                doc.valid_from_date = row['service_date']
+                doc.action_date = row['action_date']
+                doc.contract = row['co_id']
+                doc.contract_service = row['contract_service']
+                
+                if doc.order_type == 'Notification':
+                    doc.status = 'Closed'
+                    doc.submit()
+                else:
+                    doc.status = 'Pending at Billing'
+                    doc.save()
+
+def get_tickets(ason_date=nowdate()):
+    ason_date = getdate(ason_date)
+    
+    service_item = frappe._dict()
+    for si in frappe.db.sql("select * from `tabService Item` order by name,idx",as_dict=True):
+        service_item.setdefault(si.parent,frappe._dict()).setdefault(si.action_type,[]).append([si.action_method,si.action_days,si.notify_customer,si.notify_internal])
+
+    alert_list = frappe._dict()
+    for c in frappe.db.sql(bscs_utils.query["customers_list"], as_dict=True):
+        due_amount = 0
+        alerts = []
+        for co in frappe.db.sql(bscs_utils.query["contract_list"].format(c.name), as_dict=True):
+            for s in frappe.db.sql(bscs_utils.query["service_list"].format(c.name,co.name),as_dict=True):
+                for cs in frappe.db.sql(bscs_utils.query["contract_service_list"].format(c.name,co.name,s.sncode),as_dict=True):
+                    flag = 0
+                    service_price = flt(s.price)
+                    if cs.service_status == 'Active':
+                        if getdate(cs.valid_from_date).year > getdate(ason_date).year:
+                            break
+                        yd = add_years(getdate(cs.valid_from_date),(getdate(ason_date).year - getdate(cs.valid_from_date).year))
+                        for action_type,action_methods in service_item[cs.sncode].iteritems():
+                            for am in action_methods:
+                                calc_date = getdate(yd-timedelta(days=am[1])) if am[0] == 'Before Service Expiry' else getdate(yd+timedelta(days=am[1]))
+                                if calc_date == ason_date:
+                                    flag += 1
+                                    alerts.append({
+                                                    'customer_id': c.name,
+                                                    'co_id': co.name,
+                                                    'contract_service': cs.name,
+                                                    'sncode': s.name,
+                                                    'des': s.des,
+                                                    'currency': s.currency,
+                                                    'price': s.price,
+                                                    'service_date': getdate(cs.valid_from_date),
+                                                    'action_type': action_type,
+                                                    'action_method': am[0],
+                                                    'action_days': am[1],
+                                                    'action_date': getdate(yd-timedelta(days=am[1])),
+                                                    'notify_customer': am[2],
+                                                    'notify_internal': am[3]
+                                    })                                    
+                    # Contract Service Level Loop
+                    if flag > 0:
+                        due_amount += flt(service_price)
+                # Service Level Loop
+            # Contract Level Loop
+        # Customer Level Loop                
+        if len(alerts) > 0:
+            alert_list.setdefault(c.name,{
+                'customer_id': c.name,
+                'customer_code': c.customer_code,
+                'root_customer': c.root_customer,
+                'customer_id_high': c.customer_id_high,
+                'customer_type': c.customer_type,
+                'company_name': c.company_name,
+                'first_name': c.first_name,
+                'last_name': c.last_name,
+                'customer_status': c.customer_status,
+                'cscurbalance': c.cscurbalance,
+                'due_amount': flt(due_amount),
+                'street_no': c.street_no,
+                'street': c.street,
+                'city': c.city,
+                'country': c.country,
+                'address1': c.address1,
+                'address2': c.address2,
+                'address3': c.address3,
+                'email_id': c.email_id,
+                'contact1': c.contact1,
+                'contact2': c.contact2,
+                'alerts': alerts
+            })
+
+    return alert_list    
 
 def add_service_item():
     for s in frappe.db.sql("select name from `tabService`", as_dict=True):
@@ -32,13 +154,46 @@ def add_service_item():
         row.notify_customer = 1
         row.notify_internal = 1
         row.save()
-        
+
 def testmail():
-    frappe.sendmail(recipients=['siva@bt.bt'],subject="Mail with Delayed TRUE",message="Delayed FALSE",delayed=True)
-    print 'Delayed TRUE: Mail sent successfully...'
-    frappe.sendmail(recipients=['siva@bt.bt'],subject="Mail with Delayed FALSE",message="Delayed FALSE",delayed=False)
-    print 'Delayed FALSE: Mail sent successfully...'
-    
+    # Test1, trying Delayed TRUE/FALSE
+    '''
+    a = frappe.sendmail(recipients=['siva@bt.bt'],subject="Mail with Delayed TRUE",message="Delayed FALSE",delayed=True)
+    print a,'Delayed TRUE: Mail sent successfully...'
+    b = frappe.sendmail(recipients=['siva@bt.bt'],subject="Mail with Delayed FALSE",message="Delayed FALSE",delayed=False)
+    print b,'Delayed FALSE: Mail sent successfully...'
+    '''
+    # Test2, trying bulk emails
+    '''
+    for i in range(50):
+        print i
+        frappe.sendmail(recipients=['siva@bt.bt'],subject="Mail with Delayed TRUE",message="Delayed TRUE")
+    '''
+
+    # Test3, trying with reference details
+    # This doesn't create communication
+    '''
+    frappe.sendmail(recipients=['siva@bt.bt'],
+                    subject='Mail with Delayed TRUE',
+                    message='Delayed TRUE',
+                    reference_doctype='Customers',
+                    reference_name='95591',
+                    communication='Email')
+    '''
+
+    # Test4, creating communication
+    email.make(
+        doctype = 'Customers',
+        name = '95591',
+        content = 'Communication body',
+        subject = 'Communication subject',
+        recipients='siva@bt.bt',
+        communication_medium='Email',
+        send_email=True,
+        #send_me_a_copy=True, #Sends a copy to bia@bt.bt
+        print_html='<h1>Some more tests</h1>'   #Sends the print_html content as html attachment
+    )
+
 def create_tags(dt, dn, dv, updated_on):
     DocTags(dt).remove_all(dn)
     DocTags(dt).add(dn,"Synced "+str(updated_on))
@@ -67,7 +222,9 @@ def sync_db():
         log.append([i,time.strftime("%H:%M:%S", time.gmtime(end_time-start_time)),time.strftime("%H:%M:%S", time.gmtime(end_time-base_time))])
 
     for l in log:
-        logger.info(" ".join(str(j) for j in [l[0],'Time elapsed:',l[1],'Time elapsed overall:',l[2]]))
+        logger.info("|".join(str(j) for j in [l[0],'Time elapsed',l[1],'Time elapsed overall',l[2]]))
+
+    # Creating sync log        
     
 def remove_all():
     remove_customers()

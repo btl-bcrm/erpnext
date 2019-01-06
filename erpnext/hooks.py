@@ -26,6 +26,11 @@ doctype_js = {
 	"Communication": "public/js/communication.js",
 }
 
+# Added by SHIV
+doctype_list_js = {
+	"doctype": "billing/doctype/work_order/work_order_list.js"
+}
+
 # setup wizard
 setup_wizard_requires = "assets/erpnext/js/setup_wizard.js"
 setup_wizard_stages = "erpnext.setup.setup_wizard.setup_wizard.get_setup_stages"
@@ -241,7 +246,7 @@ default_mail_footer = """
 	<span>
 		Sent via
 		<a class="text-muted" href="https://erpnext.com?source=via_email_footer" target="_blank">
-			ERPNext
+			ERPNext!
 		</a>
 	</span>
 """

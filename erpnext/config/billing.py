@@ -29,6 +29,16 @@ def get_data():
 			]
 		},
                 {
+			"label": _("Transactions"),
+			"items": [
+                                {
+					"type": "doctype",
+					"name": "Work Order",
+					"description": _("Work orders.")
+				},
+			]
+		},
+                {
 			"label": _("SIM Management"),
 			"items": [
                                 {

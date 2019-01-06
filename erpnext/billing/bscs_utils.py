@@ -92,7 +92,7 @@ query = {"customers": """
                          where co.customer_id = ca.customer_id 
                          and sh.co_id = co.co_id
                          and sh.sncode in {0})
-        """,
+            """,
         "large_customers": """
             select 
                 ca.customer_id,ca.custcode,
@@ -124,7 +124,7 @@ query = {"customers": """
                          and co.customer_id = ca2.customer_id 
                          and sh.co_id = co.co_id
                          and sh.sncode in {0})
-        """,
+            """,
         "contract": """
             select 
                     co.co_id,
@@ -143,12 +143,12 @@ query = {"customers": """
                          from pr_serv_status_hist sh
                          where sh.co_id = co.co_id
                          and sh.sncode in {0})
-        """,
+            """,
         "service": """
             select sncode, des, shdes
             from MPUSNTAB
             where sncode in {0}
-        """,
+            """,
         "contract_service": """
             select
                     sh.co_id||'|'||sh.sncode||'|'||sh.profile_id||'|'||sh.histno name,
@@ -163,5 +163,40 @@ query = {"customers": """
                     inner join contract_all co on co.co_id = sh.co_id
                 inner join customer_all ca on ca.customer_id = co.customer_id
             where sh.sncode in {0}
+            """,
+        "customers_list": """
+            select *
+            from `tabCustomers` c
+            where c.bill_cycle = 'ISP Billcycle Fixed' 
+            and exists(select 1
+                        from `tabContract` co, `tabContract Service` cs
+                        where co.customer_id = c.name
+                        and co.contract_status = 'Active'
+                        and cs.customer_id = co.customer_id
+                        and cs.co_id = co.co_id)
+            """,
+        "contract_list": """
+            select *
+            from `tabContract` co
+            where co.customer_id = '{0}'
+            and co.contract_status = 'Active'
+        """,
+        "service_list": """
+            select *
+            from `tabService` s
+            where exists(select 1
+                            from `tabContract Service` cs
+                            where cs.customer_id = '{0}'
+                            and cs.co_id = '{1}'
+                            and cs.sncode = s.name)
+            """,
+        "contract_service_list": """
+            select *
+            from `tabContract Service` cs
+            where cs.customer_id = '{0}'
+            and cs.co_id = '{1}'
+            and cs.sncode = '{2}'
+            order by valid_from_date desc
+            limit 1
         """
 }
