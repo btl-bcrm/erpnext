@@ -39,6 +39,21 @@ def get_data():
 			]
 		},
                 {
+			"label": _("Settings"),
+			"items": [
+                                {
+					"type": "doctype",
+					"name": "User",
+					"description": _("System users control panel")
+				},
+                                {
+					"type": "doctype",
+					"name": "Email Settings",
+					"description": _("Email Settings")
+				},
+			]
+		},
+                {
 			"label": _("SIM Management"),
 			"items": [
                                 {

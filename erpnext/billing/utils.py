@@ -19,43 +19,42 @@ def create_tickets():
     result  = get_tickets(nowdate())
     counter = 0
     for cust,data in result.iteritems():
-        current_balance = flt(data['cscurbalance'])
-        root_balance    = 0
-        if not flt(current_balance) and data['customer_id_high']:
-            root_balance = frappe.db.sql("select cscurbalance from `tabCustomers` where name='{0}'".format(data['customer_id_high']))
-            root_balance = root_balance[0][0] if root_balance else 0
-            
-        if (flt(current_balance)+flt(root_balance)+flt(data['due_amount'])) > 0:
+        current_balance = flt(data.get('cscurbalance'))
+        root_customer   = frappe.get_doc('Customers', data.get('customer_id_high')) if data.get('customer_id_high') else None
+        root_balance    = root_customer.cscurbalance if data.get('customer_id_high') else 0
+
+        if (flt(current_balance)+flt(root_balance)+flt(data.get('due_amount'))) > 0:
             counter += 1
-            print counter, cust, flt(data['cscurbalance']), flt(data['due_amount'])
+            print counter, cust, flt(data['cscurbalance']), flt(data.get('due_amount'))
             for row in data.get('alerts'):
                 doc = frappe.new_doc('Work Order')
-                doc.customers = data['customer_id']
-                doc.customer_code = data['customer_code']
-                doc.company_name = data['company_name']
-                doc.first_name = data['first_name']
-                doc.last_name = data['last_name']
-                doc.email_id = data['email_id']
-                doc.contact1 = data['contact1']
-                doc.service = row['sncode']
-                doc.des = row['des']
-                doc.currency = row['currency']
-                doc.price = row['price']
-                doc.order_type = row['action_type']
-                doc.action_method = row['action_method']
-                doc.action_days = row['action_days']
-                doc.notify_customer = row['notify_customer']
-                doc.notify_internal = row['notify_internal']
-                doc.valid_from_date = row['service_date']
-                doc.action_date = row['action_date']
-                doc.contract = row['co_id']
-                doc.contract_service = row['contract_service']
+                doc.customers       = data.get('customer_id')
+                doc.customer_code   = data.get('customer_code')
+                doc.company_name    = data.get('company_name') if data.get('company_name') else (root_customer.company_name if root_customer else None)
+                doc.first_name      = data.get('first_name') if data.get('first_name') else (root_customer.first_name if root_customer else None)
+                doc.last_name       = data.get('last_name')
+                doc.email_id        = data.get('email_id') if data.get('email_id') else (root_customer.email_id if root_customer else None)
+                doc.contact1        = data.get('contact1') if data.get('contact1') else (root_customer.contact1 if root_customer else None)
+                doc.service         = row.get('sncode')
+                doc.des             = row.get('des')
+                doc.currency        = row.get('currency')
+                doc.price           = row.get('price')
+                doc.order_type      = row.get('action_type')
+                doc.action_method   = row.get('action_method')
+                doc.action_days     = row.get('action_days')
+                doc.notify_customer = row.get('notify_customer')
+                doc.notify_internal = row.get('notify_internal')
+                doc.valid_from_date = row.get('service_date')
+                doc.action_date     = row.get('action_date')
+                doc.expiry_date     = row.get('expiry_date')
+                doc.contract        = row.get('co_id')
+                doc.contract_service = row.get('contract_service')
                 
                 if doc.order_type == 'Notification':
-                    doc.status = 'Closed'
-                    doc.submit()
+                    doc.order_status = 'Closed'
+                    doc.save()
                 else:
-                    doc.status = 'Pending at Billing'
+                    doc.order_status = 'Billing Pending'
                     doc.save()
 
 def get_tickets(ason_date=nowdate()):
@@ -97,7 +96,8 @@ def get_tickets(ason_date=nowdate()):
                                                     'action_days': am[1],
                                                     'action_date': getdate(yd-timedelta(days=am[1])),
                                                     'notify_customer': am[2],
-                                                    'notify_internal': am[3]
+                                                    'notify_internal': am[3],
+                                                    'expiry_date': yd
                                     })                                    
                     # Contract Service Level Loop
                     if flag > 0:

@@ -4,7 +4,22 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe import _
 from frappe.model.document import Document
+from frappe.utils import flt, cint, getdate, get_datetime, get_url, nowdate, now_datetime, \
+     money_in_words, add_days, add_months, add_years
 
 class Service(Document):
-	pass
+	def validate(self):
+                self.validate_action_days()
+
+        def validate_action_days(self):
+                for i in self.get('items'):
+                        if cint(i.action_days) < 0:
+                                frappe.throw(_("Row#{0}: Action days cannot be a negative value").format(i.idx), title="Invalid Data")
+                        elif i.action_method == "On Service Expiry" and cint(i.action_days) != 0:
+                                frappe.throw(_("Row#{0}: Action days should be zero for {1}").format(i.idx,i.action_method), title="Invalid Data")
+                        elif i.action_method != "On Service Expiry" and cint(i.action_days) ==  0:
+                                frappe.throw(_("Row#{0}: Please use On Service Expiry for action days zero").format(i.idx), title="Invalid Data")
+                        else:
+                                pass

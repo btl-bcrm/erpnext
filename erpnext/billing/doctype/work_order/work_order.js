@@ -1,24 +1,19 @@
 // Copyright (c) 2019, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
 
+cur_frm.add_fetch('customers','customer_code','customer_code');
+cur_frm.add_fetch('customers','company_name','company_name');
+cur_frm.add_fetch('customers','first_name','first_name');
+cur_frm.add_fetch('customers','last_name','last_name');
+cur_frm.add_fetch('customers','email_id','email_id');
+cur_frm.add_fetch('customers','contact1','contact1');
+cur_frm.add_fetch('service','des','des');
+cur_frm.add_fetch('service','price','price');
+
 frappe.ui.form.on('Work Order', {
 	refresh: function(frm) {
 		enable_disable(frm);
 		toggle_actions(frm);
-	},
-	customers: function(frm){
-		get_customer_info(frm.doc);
-		
-		/*
-		frm.set_query("service", function() {
-			return {
-				query: "erpnext.billing.doctype.work_order.work_order.get_service",
-				filters: {
-						customer: frm.doc.customer_id
-				}
-			};
-		});
-		*/
 	},
 });
 
@@ -32,8 +27,6 @@ function toggle_form_fields(frm, fields, flag){
         } else {
                 frm.enable_save();
         }
-		
-		//cur_frm.appframe.buttons.Submit.remove();
 }
 
 function enable_disable(frm){
@@ -115,11 +108,4 @@ var toggle_actions = function(frm){
 			);
 		}
 	}
-}
-
-var get_customer_info = function(doc){
-	cur_frm.call({
-			method: "get_customer_info",
-			doc: doc
-	});
 }

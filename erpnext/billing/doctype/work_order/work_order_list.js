@@ -20,9 +20,9 @@ frappe.listview_settings["Work Order"] = {
         filters:[["order_status","=", "Billing Draft"]],
         get_indicator: function(doc) {
                 if(doc.order_status === "Billing Draft"){
-                        return [__("{0}", [doc.order_status]), "orange", "order_status,=,Billing Draft"];
+                        return [__("{0}", [doc.order_status]), "lightblue", "order_status,=,Billing Draft"];
                 } else if(doc.order_status === "Systems Draft"){
-                        return [__("{0}", [doc.order_status]), "orange", "order_status,=,Systems Draft"];
+                        return [__("{0}", [doc.order_status]), "lightblue", "order_status,=,Systems Draft"];
                 } else if(doc.order_status === "Billing Pending"){
                         return [__("{0}", [doc.order_status]), "orange", "order_status,=,Billing Pending"];
 				} else if(doc.order_status === "Systems Pending"){
