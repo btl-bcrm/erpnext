@@ -51,6 +51,16 @@ def get_data():
 					"name": "Email Settings",
 					"description": _("Email Settings")
 				},
+                                {
+					"type": "doctype",
+					"name": "Email Queue",
+					"description": _("Email Queue")
+				},
+                                {
+					"type": "doctype",
+					"name": "Error Log",
+					"description": _("Error Log")
+				},
 			]
 		},
                 {

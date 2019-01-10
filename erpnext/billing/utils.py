@@ -24,9 +24,8 @@ def create_tickets():
         root_balance    = root_customer.cscurbalance if data.get('customer_id_high') else 0
 
         if (flt(current_balance)+flt(root_balance)+flt(data.get('due_amount'))) > 0:
-            counter += 1
-            print counter, cust, flt(data['cscurbalance']), flt(data.get('due_amount'))
             for row in data.get('alerts'):
+                counter += 1
                 doc = frappe.new_doc('Work Order')
                 doc.customers       = data.get('customer_id')
                 doc.customer_code   = data.get('customer_code')
@@ -49,13 +48,20 @@ def create_tickets():
                 doc.expiry_date     = row.get('expiry_date')
                 doc.contract        = row.get('co_id')
                 doc.contract_service = row.get('contract_service')
-                
-                if doc.order_type == 'Notification':
-                    doc.order_status = 'Closed'
-                    doc.save()
-                else:
-                    doc.order_status = 'Billing Pending'
-                    doc.save()
+
+                print str(counter)+'|CUST|'+str(data.get('customer_id'))+'|CURBAL|'+str(flt(data['cscurbalance']))+'|DUE|'+str(flt(data.get('due_amount')))\
+                          +'|VALID_FROM|'+str(row.get('service_date'))+'|METHOD|'+str(row.get('action_method'))\
+                          +'|DAYS|'+str(row.get('action_days'))+'|ACTION|'+str(row.get('action_date'))\
+                          +'|SERVICE|'+str(row.get('sncode'))+'|'+str(row.get('des'))
+                try:
+                    if doc.order_type == 'Notification':
+                        doc.order_status = 'Closed'
+                        doc.save()
+                    else:
+                        doc.order_status = 'Billing Pending'
+                        doc.save()
+                except Exception, e:
+                    print "ERROR",data.get('customer_id'),row.get('des'),str(e)
 
 def get_tickets(ason_date=nowdate()):
     ason_date = getdate(ason_date)
@@ -74,31 +80,31 @@ def get_tickets(ason_date=nowdate()):
                     flag = 0
                     service_price = flt(s.price)
                     if cs.service_status == 'Active':
-                        if getdate(cs.valid_from_date).year > getdate(ason_date).year:
-                            break
-                        yd = add_years(getdate(cs.valid_from_date),(getdate(ason_date).year - getdate(cs.valid_from_date).year))
-                        for action_type,action_methods in service_item[cs.sncode].iteritems():
-                            for am in action_methods:
-                                calc_date = getdate(yd-timedelta(days=am[1])) if am[0] == 'Before Service Expiry' else getdate(yd+timedelta(days=am[1]))
-                                if calc_date == ason_date:
-                                    flag += 1
-                                    alerts.append({
-                                                    'customer_id': c.name,
-                                                    'co_id': co.name,
-                                                    'contract_service': cs.name,
-                                                    'sncode': s.name,
-                                                    'des': s.des,
-                                                    'currency': s.currency,
-                                                    'price': s.price,
-                                                    'service_date': getdate(cs.valid_from_date),
-                                                    'action_type': action_type,
-                                                    'action_method': am[0],
-                                                    'action_days': am[1],
-                                                    'action_date': getdate(yd-timedelta(days=am[1])),
-                                                    'notify_customer': am[2],
-                                                    'notify_internal': am[3],
-                                                    'expiry_date': yd
-                                    })                                    
+                        for key,value in enumerate(range(getdate(cs.valid_from_date).year, (getdate(ason_date).year)+1)):
+                            yd = add_years(getdate(cs.valid_from_date), key)
+                            
+                            for action_type,action_methods in service_item[cs.sncode].iteritems():
+                                for am in action_methods:
+                                    calc_date = getdate(yd-timedelta(days=am[1])) if am[0] == 'Before Service Expiry' else getdate(yd+timedelta(days=am[1]))
+                                    if calc_date == ason_date:
+                                        flag += 1
+                                        alerts.append({
+                                                        'customer_id': c.name,
+                                                        'co_id': co.name,
+                                                        'contract_service': cs.name,
+                                                        'sncode': s.name,
+                                                        'des': s.des,
+                                                        'currency': s.currency,
+                                                        'price': s.price,
+                                                        'service_date': getdate(cs.valid_from_date),
+                                                        'action_type': action_type,
+                                                        'action_method': am[0],
+                                                        'action_days': am[1],
+                                                        'action_date': getdate(yd-timedelta(days=am[1])),
+                                                        'notify_customer': am[2],
+                                                        'notify_internal': am[3],
+                                                        'expiry_date': yd
+                                        })                                    
                     # Contract Service Level Loop
                     if flag > 0:
                         due_amount += flt(service_price)
