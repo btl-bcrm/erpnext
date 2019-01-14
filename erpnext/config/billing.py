@@ -39,6 +39,23 @@ def get_data():
 			]
 		},
                 {
+			"label": _("Reports"),
+			"items": [
+                                {
+					"type": "report",
+					"name": "Work Order Register",
+					"doctype": "Work Order",
+					"is_query_report": True
+				},
+                                {
+					"type": "report",
+					"name": "Email Queue Register",
+					"doctype": "Email Queue",
+					"is_query_report": True
+				},
+			]
+		},
+                {
 			"label": _("Settings"),
 			"items": [
                                 {
