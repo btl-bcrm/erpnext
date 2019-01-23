@@ -17,7 +17,6 @@ frappe.listview_settings["Work Order"] = {
 			*/
 		},
         add_fields: ["order_status"],
-        filters:[["order_status","=", "Billing Draft"]],
         get_indicator: function(doc) {
                 if(doc.order_status === "Billing Draft"){
                         return [__("{0}", [doc.order_status]), "lightblue", "order_status,=,Billing Draft"];
@@ -27,10 +26,6 @@ frappe.listview_settings["Work Order"] = {
                         return [__("{0}", [doc.order_status]), "orange", "order_status,=,Billing Pending"];
 				} else if(doc.order_status === "Systems Pending"){
                         return [__("{0}", [doc.order_status]), "orange", "order_status,=,Systems Pending"];
-				} else if(doc.order_status === "Billing Rejected"){
-                        return [__("{0}", [doc.order_status]), "orange", "order_status,=,Billing Rejected"];
-				} else if(doc.order_status === "Systems Rejected"){
-                        return [__("{0}", [doc.order_status]), "orange", "order_status,=,Systems Rejected"];
 				} else if(doc.order_status === "Billing Cancelled"){
                         return [__("{0}", [doc.order_status]), "red", "order_status,=,Billing Cancelled"];
 				} else if(doc.order_status === "Systems Cancelled"){

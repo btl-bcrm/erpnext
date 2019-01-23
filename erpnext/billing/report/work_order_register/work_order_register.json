@@ -6,7 +6,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2019-01-11 09:46:44.882865", 
+ "modified": "2019-01-15 11:10:44.909668", 
  "modified_by": "Administrator", 
  "module": "Billing", 
  "name": "Work Order Register", 
@@ -24,12 +24,6 @@
   }, 
   {
    "role": "Billing User"
-  }, 
-  {
-   "role": "Billing Admin"
-  }, 
-  {
-   "role": "Systems Admin"
   }
  ]
 }

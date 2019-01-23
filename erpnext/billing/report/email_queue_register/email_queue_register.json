@@ -7,7 +7,7 @@
  "idx": 0, 
  "is_standard": "Yes", 
  "json": "{\"add_total_row\": 0}", 
- "modified": "2019-01-11 13:01:48.529415", 
+ "modified": "2019-01-15 11:10:16.645952", 
  "modified_by": "Administrator", 
  "module": "Billing", 
  "name": "Email Queue Register", 
@@ -24,13 +24,7 @@
    "role": "Billing User"
   }, 
   {
-   "role": "Billing Admin"
-  }, 
-  {
    "role": "Systems User"
-  }, 
-  {
-   "role": "Systems Admin"
   }
  ]
 }

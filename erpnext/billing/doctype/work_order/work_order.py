@@ -69,16 +69,16 @@ class WorkOrder(Document):
                                 cust_info.append(doc.street_no)
                         if doc.street:
                                 cust_info.append(doc.street)
-                        if doc.city:
-                                cust_info.append(doc.city)
-                        if doc.country:
-                                cust_info.append(doc.country)
                         if doc.address1:
                                 cust_info.append(doc.address1)
                         if doc.address2:
                                 cust_info.append(doc.address2)
                         if doc.address3:
                                 cust_info.append(doc.address3)
+                        if doc.city:
+                                cust_info.append(doc.city)
+                        if doc.country:
+                                cust_info.append(doc.country)
                         if doc.email_id:
                                 cust_info.append(doc.email_id)
                         if doc.contact1:
