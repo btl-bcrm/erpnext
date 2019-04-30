@@ -22,12 +22,16 @@ class MyEventHandler(pyinotify.ProcessEvent):
         hash_object = hashlib.md5(str(event.pathname).encode())
         hash_id = (int((hash_object.hexdigest()),16)%10)+1
 
-        if hash_id == 1:
-            print datetime.datetime.now(),'|',os.path.basename(event.pathname),'|','process_IN_CLOSE_WRITE'
+        if hash_id >= 0:
+            print datetime.datetime.now(),'|',os.path.basename(event.pathname),'|','process_IN_CLOSE_WRITE','|','TEST'
             for pf in [i.strip(" ") for i in config.get('prefix', 'nrt_out_prefix').split(",")]:
                 if os.path.basename(event.pathname).startswith(pf):
-                    if self.upload(str(event.pathname).rstrip(".tmp")):
-                        self.backup(str(event.pathname).rstrip(".tmp"))
+                    pathname = str(event.pathname)
+                    if pathname.find(".") > 0:
+                        pathname = pathname[0:pathname.find(".")]
+                        
+                    if self.upload(pathname):
+                        self.backup(pathname)
                     break
             else:
                 print datetime.datetime.now(),'|',os.path.basename(event.pathname),'|','PREFIX not supported'
@@ -46,6 +50,13 @@ class MyEventHandler(pyinotify.ProcessEvent):
 
     def upload(self, pathname):
         with ftputil.FTPHost(ftp_host, ftp_usr, ftp_pwd) as ftp_target:
+            files = []
+            if os.path.dirname(pathname):
+                files = os.listdir(os.path.dirname(pathname))
+
+            for i in files:
+                print '*****TEST',i
+            '''
             try:
                 ftp_target.upload(str(pathname),str(os.path.basename(pathname)))
                 print datetime.datetime.now(),'|',os.path.basename(pathname),'|','FTP Successful'
@@ -53,7 +64,7 @@ class MyEventHandler(pyinotify.ProcessEvent):
                 print datetime.datetime.now(),'|',os.path.basename(pathname),'|','FTP Failed',str(e)
                 return False
             return True
-    
+            '''
 def main():
     path = config.get('directories', 'nrt_out')
 

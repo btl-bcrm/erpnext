@@ -13,27 +13,31 @@ import hashlib
 
 config = SafeConfigParser()
 config.read("/home/frappe/erp/apps/erpnext/erpnext/billing/roaming/config.ini")
-ftp_host = config.get('credentials', 'dch_nrt_host')
-ftp_usr = config.get('credentials', 'dch_nrt_usr')
-ftp_pwd = config.get('credentials', 'dch_nrt_pwd')
+ftp_host = config.get('credentials', 'dch_tapo_host')
+ftp_usr = config.get('credentials', 'dch_tapo_usr')
+ftp_pwd = config.get('credentials', 'dch_tapo_pwd')
 
 class MyEventHandler(pyinotify.ProcessEvent):
     def process_IN_CLOSE_WRITE(self, event):
         hash_object = hashlib.md5(str(event.pathname).encode())
         hash_id = (int((hash_object.hexdigest()),16)%10)+1
 
-        if hash_id == 1:
+        if hash_id == 8:
             print datetime.datetime.now(),'|',os.path.basename(event.pathname),'|','process_IN_CLOSE_WRITE'
-            for pf in [i.strip(" ") for i in config.get('prefix', 'nrt_out_prefix').split(",")]:
+            for pf in [i.strip(" ") for i in config.get('prefix', 'tap_out_prefix').split(",")]:
                 if os.path.basename(event.pathname).startswith(pf):
-                    if self.upload(str(event.pathname).rstrip(".tmp")):
-                        self.backup(str(event.pathname).rstrip(".tmp"))
+                    pathname = str(event.pathname)
+                    if pathname.find(".") > 0:
+                        pathname = pathname[0:pathname.find(".")]
+                        
+                    if self.upload(pathname):
+                        self.backup(pathname)
                     break
             else:
                 print datetime.datetime.now(),'|',os.path.basename(event.pathname),'|','PREFIX not supported'
 
     def backup(self, pathname):
-        backup_path = config.get('directories', 'nrt_out_backup').rstrip("/")
+        backup_path = config.get('directories', 'tap_out_backup').rstrip("/")
 
         try:
             if not os.path.isdir(backup_path):
@@ -55,7 +59,7 @@ class MyEventHandler(pyinotify.ProcessEvent):
             return True
     
 def main():
-    path = config.get('directories', 'nrt_out')
+    path = config.get('directories', 'tap_out')
 
     # watch manager
     wm = pyinotify.WatchManager()

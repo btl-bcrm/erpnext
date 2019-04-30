@@ -15,6 +15,15 @@ import logging
 from frappe.core.doctype.communication import email
 from datetime import timedelta
 
+def cancel_wo():
+    counter = 0
+    for t in frappe.db.sql("select name from `tabWork Order` where order_status = 'Billing Pending'", as_dict=True):
+        counter += 1
+        doc = frappe.get_doc("Work Order", t.name)
+        doc.order_status = "Billing Cancelled"
+        doc.save(ignore_permissions=True)
+        print doc.name
+
 def create_tickets():
     result  = get_tickets(nowdate())
     counter = 0

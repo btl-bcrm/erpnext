@@ -22,7 +22,7 @@ class MyEventHandler(pyinotify.ProcessEvent):
         hash_object = hashlib.md5(str(event.pathname).encode())
         hash_id = (int((hash_object.hexdigest()),16)%10)+1
 
-        if hash_id == 1:
+        if hash_id == 4:
             print datetime.datetime.now(),'|',os.path.basename(event.pathname),'|','process_IN_CLOSE_WRITE'
             for pf in [i.strip(" ") for i in config.get('prefix', 'nrt_out_prefix').split(",")]:
                 if os.path.basename(event.pathname).startswith(pf):

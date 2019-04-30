@@ -9,6 +9,7 @@ import pyinotify
 import ftputil
 import subprocess
 import datetime
+import hashlib
 
 config = SafeConfigParser()
 config.read("/home/frappe/erp/apps/erpnext/erpnext/billing/roaming/config.ini")
@@ -18,14 +19,22 @@ ftp_pwd = config.get('credentials', 'dch_tapo_pwd')
 
 class MyEventHandler(pyinotify.ProcessEvent):
     def process_IN_CLOSE_WRITE(self, event):
-        print datetime.datetime.now(),'|',os.path.basename(event.pathname),'|','process_IN_CLOSE_WRITE'
-        for pf in [i.strip(" ") for i in config.get('prefix', 'tap_out_prefix').split(",")]:
-            if os.path.basename(event.pathname).startswith(pf):
-                if self.upload(event.pathname):
-                    self.backup(event.pathname)
-                break
-        else:
-            print datetime.datetime.now(),'|',os.path.basename(event.pathname),'|','PREFIX not supported'
+        hash_object = hashlib.md5(str(event.pathname).encode())
+        hash_id = (int((hash_object.hexdigest()),16)%10)+1
+
+        if hash_id == 1:
+            print datetime.datetime.now(),'|',os.path.basename(event.pathname),'|','process_IN_CLOSE_WRITE'
+            for pf in [i.strip(" ") for i in config.get('prefix', 'tap_out_prefix').split(",")]:
+                if os.path.basename(event.pathname).startswith(pf):
+                    pathname = str(event.pathname)
+                    if pathname.find(".") > 0:
+                        pathname = pathname[0:pathname.find(".")]
+                        
+                    if self.upload(pathname):
+                        self.backup(pathname)
+                    break
+            else:
+                print datetime.datetime.now(),'|',os.path.basename(event.pathname),'|','PREFIX not supported'
 
     def backup(self, pathname):
         backup_path = config.get('directories', 'tap_out_backup').rstrip("/")
