@@ -87,6 +87,7 @@ def get_tickets(ason_date=nowdate()):
             for s in frappe.db.sql(bscs_utils.query["service_list"].format(c.name,co.name),as_dict=True):
                 for cs in frappe.db.sql(bscs_utils.query["contract_service_list"].format(c.name,co.name,s.sncode),as_dict=True):
                     flag = 0
+                    factor = 0
                     service_price = flt(s.price)
                     if cs.service_status == 'Active':
                         for key,value in enumerate(range(getdate(cs.valid_from_date).year, (getdate(ason_date).year)+1)):
@@ -97,6 +98,7 @@ def get_tickets(ason_date=nowdate()):
                                     calc_date = getdate(yd-timedelta(days=am[1])) if am[0] == 'Before Service Expiry' else getdate(yd+timedelta(days=am[1]))
                                     if calc_date == ason_date:
                                         flag += 1
+                                        factor = 1 if am[0] == 'After Service Expiry' else 2
                                         alerts.append({
                                                         'customer_id': c.name,
                                                         'co_id': co.name,
@@ -116,7 +118,7 @@ def get_tickets(ason_date=nowdate()):
                                         })                                    
                     # Contract Service Level Loop
                     if flag > 0:
-                        due_amount += flt(service_price)
+                        due_amount += (factor * flt(service_price))
                 # Service Level Loop
             # Contract Level Loop
         # Customer Level Loop                

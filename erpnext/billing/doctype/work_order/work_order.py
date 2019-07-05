@@ -192,8 +192,8 @@ class WorkOrder(Document):
                         if self.order_type == "Notification":
                                 if cint(self.notify_customer):
                                         if self.email_id:
-                                                #recipients = cust_email_id     # Temporarily commented
-                                                recipients = ['siva@bt.bt']
+                                                recipients = cust_email_id     # Temporarily commented
+                                                #recipients = ['siva@bt.bt']
                                         else:
                                                 recipients = ['siva@bt.bt']
                                                 msg_subject = "WorkOrder {0}: {1} Email ID missing".format(self.name, self.customers)
